@@ -77,6 +77,11 @@ def find_image(keyword, start = 0, stop = 1):
 	return image_url_list
 
 bot = commands.Bot(command_prefix='!', help_command=None)
+help_embed = discord.Embed(title="!fi",description="> Search for images based on keywords")
+help_embed.add_field(name="!fi keyword",value="ex) !fi apple\n:apple:1st apple image",inline=False)
+help_embed.add_field(name="!fi start keyword",value="ex) !fi 2 dog\n:dog:2nd dog image\nex) !fi 4 cat\n:cat:4th cat image",inline=False)
+help_embed.add_field(name="!fi start stop keyword",value="ex) !fi 1 5 rabbit\n:rabbit:1st-5th rabbit image\nex) !fi 4 10 fox\n:fox:4th-10th fox image",inline=False)
+help_embed.add_field(name="If you have a request, ", value="[Twitter](https://twitter.com/akomekagome) or [GitHub](https://github.com/akomekagome/FindImage)",inline=False)
 
 @bot.event
 async def on_ready():
@@ -96,13 +101,7 @@ async def fi(ctx, *args):
 
 @bot.command()
 async def help(ctx):
-	embed = discord.Embed(title="!fi",description="> Search for images based on keywords")
-	embed.add_field(name="!fi keyword",value="ex) !fi apple\n:apple:1st apple image",inline=False)
-	embed.add_field(name="!fi start keyword",value="ex) !fi 2 dog\n:dog:2nd dog image\nex) !fi 4 cat\n:cat:4th cat image",inline=False)
-	embed.add_field(name="!fi start stop keyword",value="ex) !fi 1 5 rabbit\n:rabbit:1st-5th rabbit image\nex) !fi 4 10 fox\n:fox:4th-10th fox image",inline=False)
-	embed.add_field(name="If you have a request, ", value="[Twitter](https://twitter.com/akomekagome) or [GitHub](https://github.com/akomekagome/FindImage)",inline=False)
-
-	await ctx.send(embed=embed)
+	await ctx.send(embed=help_embed)
 
 token = os.environ['FINDIMAGE_DISCORD_TOKEN']
 bot.run(token)
