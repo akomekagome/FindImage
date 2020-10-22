@@ -1,1 +1,1 @@
-python find_imagepy
+python find_image.py
