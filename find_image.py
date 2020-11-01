@@ -77,7 +77,7 @@ def find_image(keyword, start = 0, stop = 1):
 	return image_url_list
 
 bot = commands.Bot(command_prefix='!', help_command=None)
-help_embed = discord.Embed(title="!fi",description="> Search for images based on keywords")
+help_embed = discord.Embed(title="!fi",description="> Search by keyword using Google Image Search")
 help_embed.add_field(name="!fi keyword",value="ex) !fi apple\n:apple:1st apple image",inline=False)
 help_embed.add_field(name="!fi start keyword",value="ex) !fi 2 dog\n:dog:2nd dog image\nex) !fi 4 cat\n:cat:4th cat image",inline=False)
 help_embed.add_field(name="!fi start stop keyword",value="ex) !fi 1 5 rabbit\n:rabbit:1st-5th rabbit image\nex) !fi 4 10 fox\n:fox:4th-10th fox image",inline=False)
