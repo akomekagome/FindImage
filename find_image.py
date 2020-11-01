@@ -85,7 +85,7 @@ help_embed.add_field(name="If you have a request, ", value="[Twitter](https://tw
 
 @bot.event
 async def on_ready():
-	print('ready')
+    print("導入サーバー数: " + str(len(bot.guilds)))
 
 @bot.command()
 async def fi(ctx, *args):
