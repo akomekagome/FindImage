@@ -95,14 +95,21 @@ async def open_json(path):
 async def prefix_from_json(bot, message):
 	return data.get(str(message.guild.id), defalut_prefix)
 
+def get_help_embed(prefix):
+	help_embed = discord.Embed()
+	help_embed.add_field(name = "fi", value = "> Search for images based on keywords", inline = False)
+	help_embed.add_field(name = f"{prefix}fi keyword", value = f"ex) {prefix}fi apple\n:apple:1st apple image", inline = False)
+	help_embed.add_field(name = f"{prefix}fi start keyword", value = f"ex) {prefix}fi 2 dog\n:dog:2nd dog image\nex) {prefix}fi 4 cat\n:cat:4th cat image", inline = False)
+	help_embed.add_field(name = f"{prefix}fi start stop keyword", value = f"ex) {prefix}fi 1 5 rabbit\n:rabbit:1st-5th rabbit image\nex) {prefix}fi 4 10 fox\n:fox:4th-10th fox image", inline = False)
+	help_embed.add_field(name = "set_prefix", value = "> Change the prefix", inline = False)
+	help_embed.add_field(name = f"{prefix}set_prefix after_prefix", value = f"ex) {prefix}set_prefix $\n:dollar:The prefix has been changed from {prefix} to $", inline = False)
+	help_embed.add_field(name = "If you have a request, ", value = "[Twitter](https://twitter.com/akomekagome) or [GitHub](https://github.com/akomekagome/FindImage)", inline = False)
+
+	return help_embed
+
 loop = asyncio.get_event_loop()
 data = loop.run_until_complete(open_json(prefix_json_path))
 bot = commands.Bot(command_prefix=prefix_from_json, help_command=None)
-help_embed = discord.Embed(title="!fi",description="> Search for images based on keywords")
-help_embed.add_field(name="!fi keyword",value="ex) !fi apple\n:apple:1st apple image",inline=False)
-help_embed.add_field(name="!fi start keyword",value="ex) !fi 2 dog\n:dog:2nd dog image\nex) !fi 4 cat\n:cat:4th cat image",inline=False)
-help_embed.add_field(name="!fi start stop keyword",value="ex) !fi 1 5 rabbit\n:rabbit:1st-5th rabbit image\nex) !fi 4 10 fox\n:fox:4th-10th fox image",inline=False)
-help_embed.add_field(name="If you have a request, ", value="[Twitter](https://twitter.com/akomekagome) or [GitHub](https://github.com/akomekagome/FindImage)",inline=False)
 
 @bot.event
 async def on_ready():
@@ -122,7 +129,8 @@ async def fi(ctx, *args):
 
 @bot.command()
 async def help(ctx):
-	await ctx.send(embed=help_embed)
+	prefix = data.get(str(ctx.guild.id), defalut_prefix)
+	await ctx.send(embed=get_help_embed(prefix))
 
 @bot.command()
 async def set_prefix(ctx, prefix):
