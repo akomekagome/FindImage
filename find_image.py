@@ -3,10 +3,14 @@
 from urllib import request as req
 from urllib import parse
 from discord.ext import commands
+import json
+import aiofiles
+import asyncio
 import discord
 import bs4
 import re
 import os
+
 
 protocols = [
 	'https://',
@@ -35,6 +39,9 @@ exception_urls = [
 	'.cdninstagram.com'
 ]
 
+prefix_json_path = 'prefix.json'
+defalut_prefix = '!'
+
 def is_url(str):
 	return any([x in str for x in protocols])
 
@@ -58,6 +65,7 @@ def check_url(url):
 	except req.HTTPError:
 		return False
 
+
 def find_image(keyword, start = 0, stop = 1):
 	urlKeyword = parse.quote(keyword)
 	url = 'https://www.google.com/search?hl=jp&q=' + urlKeyword + '&btnG=Google+Search&tbs=0&safe=off&tbm=isch'
@@ -76,7 +84,20 @@ def find_image(keyword, start = 0, stop = 1):
 
 	return image_url_list
 
-bot = commands.Bot(command_prefix='!', help_command=None)
+async def open_json(path):
+	try:
+		async with aiofiles.open(path) as f:
+			contents = await f.read()
+			return json.loads(contents)
+	except:
+		return {}
+
+async def prefix_from_json(bot, message):
+	return data.get(str(message.guild.id), defalut_prefix)
+
+loop = asyncio.get_event_loop()
+data = loop.run_until_complete(open_json(prefix_json_path))
+bot = commands.Bot(command_prefix=prefix_from_json, help_command=None)
 help_embed = discord.Embed(title="!fi",description="> Search for images based on keywords")
 help_embed.add_field(name="!fi keyword",value="ex) !fi apple\n:apple:1st apple image",inline=False)
 help_embed.add_field(name="!fi start keyword",value="ex) !fi 2 dog\n:dog:2nd dog image\nex) !fi 4 cat\n:cat:4th cat image",inline=False)
@@ -102,6 +123,17 @@ async def fi(ctx, *args):
 @bot.command()
 async def help(ctx):
 	await ctx.send(embed=help_embed)
+
+@bot.command()
+async def set_prefix(ctx, prefix):
+	key = str(ctx.guild.id)
+	before = data.get(key, defalut_prefix)
+	data[key] = prefix
+
+	async with aiofiles.open("prefix.json", "w") as f:
+		await f.write(json.dumps(data))
+
+	await ctx.send(f"The prefix has been changed from {before} to {prefix}")
 
 token = os.environ['FINDIMAGE_DISCORD_TOKEN']
 bot.run(token)
