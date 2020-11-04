@@ -108,11 +108,11 @@ def get_prefix_list(key):
 def get_help_embed(prefix):
 	help_embed = discord.Embed()
 	help_embed.add_field(name = "fi", value = "> Search for images based on keywords", inline = False)
-	help_embed.add_field(name = f"{prefix}fi keyword", value = f"ex) {prefix}fi apple\n:apple:1st apple image", inline = False)
-	help_embed.add_field(name = f"{prefix}fi start keyword", value = f"ex) {prefix}fi 2 dog\n:dog:2nd dog image\nex) {prefix}fi 4 cat\n:cat:4th cat image", inline = False)
-	help_embed.add_field(name = f"{prefix}fi start stop keyword", value = f"ex) {prefix}fi 1 5 rabbit\n:rabbit:1st-5th rabbit image\nex) {prefix}fi 4 10 fox\n:fox:4th-10th fox image", inline = False)
+	help_embed.add_field(name = f"{prefix}fi <keyword>", value = f"ex) {prefix}fi apple\n:apple:1st apple image", inline = False)
+	help_embed.add_field(name = f"{prefix}fi <start> <keyword>", value = f"ex) {prefix}fi 2 dog\n:dog:2nd dog image\nex) {prefix}fi 4 cat\n:cat:4th cat image", inline = False)
+	help_embed.add_field(name = f"{prefix}fi <start> <stop> <keyword>", value = f"ex) {prefix}fi 1 5 rabbit\n:rabbit:1st-5th rabbit image\nex) {prefix}fi 4 10 fox\n:fox:4th-10th fox image", inline = False)
 	help_embed.add_field(name = "set_prefix", value = "> Change the prefix", inline = False)
-	help_embed.add_field(name = f"{prefix}set_prefix after_prefix", value = f"ex) {prefix}set_prefix $\n:dollar:The prefix has been changed from {prefix} to $", inline = False)
+	help_embed.add_field(name = f"{prefix}set_prefix <after_prefix>", value = f"ex) {prefix}set_prefix $\n:dollar:The prefix has been changed from {prefix} to $", inline = False)
 	help_embed.add_field(name = "If you have a request, ", value = "[Twitter](https://twitter.com/akomekagome) or [GitHub](https://github.com/akomekagome/FindImage)", inline = False)
 
 	return help_embed
