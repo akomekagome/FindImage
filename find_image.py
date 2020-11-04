@@ -10,7 +10,8 @@ import discord
 import bs4
 import re
 import os
-
+import psycopg2
+import psycopg2.extras
 
 protocols = [
 	'https://',
@@ -41,6 +42,7 @@ exception_urls = [
 
 prefix_json_path = 'prefix.json'
 defalut_prefix = '!'
+table_name = 'guilds'
 
 def is_url(str):
 	return any([x in str for x in protocols])
@@ -64,7 +66,6 @@ def check_url(url):
 		return True
 	except req.HTTPError:
 		return False
-
 
 def find_image(keyword, start = 0, stop = 1):
 	urlKeyword = parse.quote(keyword)
@@ -92,8 +93,17 @@ async def open_json(path):
 	except:
 		return {}
 
-async def prefix_from_json(bot, message):
-	return data.get(str(message.guild.id), defalut_prefix)
+async def get_prefix(bot, message):
+	return get_prefix_list(str(message.guild.id))
+
+def get_prefix_dict(key):
+	return data.get(key, defalut_prefix)
+
+def get_prefix_list(key):
+	for x in data:
+		if x[0] == key:
+			return x[1]
+	return defalut_prefix
 
 def get_help_embed(prefix):
 	help_embed = discord.Embed()
@@ -107,9 +117,27 @@ def get_help_embed(prefix):
 
 	return help_embed
 
-loop = asyncio.get_event_loop()
-data = loop.run_until_complete(open_json(prefix_json_path))
-bot = commands.Bot(command_prefix=prefix_from_json, help_command=None)
+async def set_prefix_json(key, prefix):
+	data[key] = prefix
+	async with aiofiles.open("prefix.json", "w") as f:
+		await f.write(json.dumps(data))
+
+def set_prefix_sql(key, prefix):
+	for x in data:
+		if x[0] == key:
+			x[1] = prefix
+	with conn.cursor() as cur:
+		cur.execute(f'INSERT INTO {table_name} VALUES (%s,%s) ON CONFLICT ON CONSTRAINT guilds_pkey DO UPDATE SET prefix=%s', (key, prefix, prefix))
+	conn.commit()
+
+# loop = asyncio.get_event_loop()
+# data = loop.run_until_complete(open_json(prefix_json_path))
+db_url = os.environ['DATABASE_URL']
+conn = psycopg2.connect(db_url)
+with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+	cur.execute(f'SELECT * FROM {table_name}')
+	data = cur.fetchall()
+bot = commands.Bot(command_prefix=get_prefix, help_command=None)
 
 @bot.event
 async def on_ready():
@@ -129,17 +157,14 @@ async def fi(ctx, *args):
 
 @bot.command()
 async def help(ctx):
-	prefix = data.get(str(ctx.guild.id), defalut_prefix)
+	prefix = get_prefix_list(str(ctx.guild.id))
 	await ctx.send(embed=get_help_embed(prefix))
 
 @bot.command()
 async def set_prefix(ctx, prefix):
 	key = str(ctx.guild.id)
-	before = data.get(key, defalut_prefix)
-	data[key] = prefix
-
-	async with aiofiles.open("prefix.json", "w") as f:
-		await f.write(json.dumps(data))
+	before = get_prefix_list(key)
+	set_prefix_sql(key, prefix)
 
 	await ctx.send(f"The prefix has been changed from {before} to {prefix}")
 
