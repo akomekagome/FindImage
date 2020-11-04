@@ -1,4 +1,4 @@
 discord.py
 bs4
 aiofiles
-pg8000
+psycopg2
