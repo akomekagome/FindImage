@@ -1,2 +1,2 @@
 # FindImage
-[find_image](https://raw.githubusercontent.com/wiki/akomekagome/FindImage/images/findImage.gif)
+![find_image](https://raw.githubusercontent.com/wiki/akomekagome/FindImage/images/findImage.gif)
