@@ -94,16 +94,13 @@ async def open_json(path):
 		return {}
 
 async def get_prefix(bot, message):
-	return get_prefix_list(str(message.guild.id))
+	return get_prefix_sql(str(message.guild.id))
 
-def get_prefix_dict(key):
-	return data.get(key, defalut_prefix)
-
-def get_prefix_list(key):
-	for x in data:
-		if x[0] == key:
-			return x[1]
-	return defalut_prefix
+def get_prefix_sql(key):
+	with conn.cursor() as cur:
+		cur.execute(f'SELECT * FROM {table_name} WHERE id=%s', (key, ))
+		d = cur.fetchone()
+		return d[1] if d else defalut_prefix
 
 def get_help_embed(prefix):
 	help_embed = discord.Embed()
@@ -117,26 +114,13 @@ def get_help_embed(prefix):
 
 	return help_embed
 
-async def set_prefix_json(key, prefix):
-	data[key] = prefix
-	async with aiofiles.open("prefix.json", "w") as f:
-		await f.write(json.dumps(data))
-
 def set_prefix_sql(key, prefix):
-	for x in data:
-		if x[0] == key:
-			x[1] = prefix
 	with conn.cursor() as cur:
 		cur.execute(f'INSERT INTO {table_name} VALUES (%s,%s) ON CONFLICT ON CONSTRAINT guilds_pkey DO UPDATE SET prefix=%s', (key, prefix, prefix))
 	conn.commit()
 
-# loop = asyncio.get_event_loop()
-# data = loop.run_until_complete(open_json(prefix_json_path))
 db_url = os.environ['DATABASE_URL']
 conn = psycopg2.connect(db_url)
-with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
-	cur.execute(f'SELECT * FROM {table_name}')
-	data = cur.fetchall()
 bot = commands.Bot(command_prefix=get_prefix, help_command=None)
 
 @bot.event
@@ -157,16 +141,13 @@ async def fi(ctx, *args):
 
 @bot.command()
 async def help(ctx):
-	prefix = get_prefix_list(str(ctx.guild.id))
-	await ctx.send(embed=get_help_embed(prefix))
+	await ctx.send(embed=get_help_embed(ctx.prefix))
 
 @bot.command()
 async def set_prefix(ctx, prefix):
-	key = str(ctx.guild.id)
-	before = get_prefix_list(key)
-	set_prefix_sql(key, prefix)
+	set_prefix_sql(str(ctx.guild.id), prefix)
 
-	await ctx.send(f"The prefix has been changed from {before} to {prefix}")
+	await ctx.send(f"The prefix has been changed from {ctx.prefix} to {prefix}")
 
 token = os.environ['FINDIMAGE_DISCORD_TOKEN']
 bot.run(token)
