@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from typing import Text
 from urllib import request as req
 from urllib import parse
 from discord.ext import commands
@@ -77,11 +78,11 @@ def find_image(keyword, start = 0, stop = 1):
 	page.close()
 	soup = bs4.BeautifulSoup(html, "html.parser", from_encoding="utf8")
 	soup = soup.find_all('script')
-	text = ''.join([str(x) for x in soup])
-	list = text.split('\"')
-	image_url_list = [x for x in list if is_image_url(x)][start:stop]
-	image_url_list = [re.sub(r'[\'\[\]]', '', x) for x in image_url_list]
-	image_url_list = [x.encode().decode('unicode-escape') for x in image_url_list]
+	data = [c for s in soup for c in s.contents if c.startswith("AF_initDataCallback")][1]
+	data = data[data.find("data:") + 5:data.find("sideChannel") - 2]
+	data = json.loads(data)
+	data = data[31][0][12][2]
+	image_url_list = [x[1][3][0] for x in data if x[1]][start:stop]
 
 	return image_url_list
 
