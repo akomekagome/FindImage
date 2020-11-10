@@ -1,64 +1,26 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from typing import Text
 from urllib import request as req
 from urllib import parse
 from discord.ext import commands
 import json
 import aiofiles
-import asyncio
 import discord
 import bs4
-import re
 import os
 import psycopg2
 import psycopg2.extras
 
-protocols = [
-	'https://',
-	'http://'
-]
-
-image_extensions = [
-	'.jpg',
-	'.JPG',
-	'.png',
-	'.gif',
-	'.jpeg'
-]
-
-unique_urls = [
-	'lohas.nicoseiga.jp/thumb',
-	'cdn-image.alphapolis.co.jp',
-	'cdn.yamap.co.jp/public/image2.yamap.co.jp',
-	'img.cdn.nimg.jp',
-	'chie-pctr.c.yimg.jp',
-	'nicovideo.cdn.nimg.jp',
-	'www.instagram.com',
-]
-
 exception_urls = [
-	'.cdninstagram.com'
+	'.cdninstagram.com',
+	'www.instagram.com'
 ]
 
 prefix_json_path = 'prefix.json'
 defalut_prefix = '!'
 table_name = 'guilds'
 
-def is_url(str):
-	return any([x in str for x in protocols])
-
-def is_image_extension(str):
-	return any([x in str for x in image_extensions])
-
-def is_unique_url(str):
-	return any([x in str for x in unique_urls])
-
 def is_exception_url(str):
 	return any([x in str for x in exception_urls])
-
-def is_image_url(str):
-	return is_url(str) & (not is_exception_url(str)) & (is_image_extension(str) | is_unique_url(str))
 
 def check_url(url):
 	try:
@@ -82,9 +44,10 @@ def find_image(keyword, start = 0, stop = 1):
 	data = data[data.find("data:") + 5:data.find("sideChannel") - 2]
 	data = json.loads(data)
 	data = data[31][0][12][2]
-	image_url_list = [x[1][3][0] for x in data if x[1]][start:stop]
+	image_urls= [x[1][3][0] for x in data if x[1]]
+	image_urls= [url for url in image_urls if not is_exception_url(url)][start:stop]
 
-	return image_url_list
+	return image_urls
 
 async def open_json(path):
 	try:
