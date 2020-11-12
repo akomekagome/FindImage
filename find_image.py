@@ -30,7 +30,7 @@ def check_url(url):
 	except req.HTTPError:
 		return False
 
-def find_image(keyword, start = 0, stop = 1):
+def find_image(keyword):
 	urlKeyword = parse.quote(keyword)
 	url = 'https://www.google.com/search?hl=jp&q=' + urlKeyword + '&btnG=Google+Search&tbs=0&safe=off&tbm=isch'
 	headers = {"User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:47.0) Gecko/20100101 Firefox/47.0",}
@@ -38,10 +38,14 @@ def find_image(keyword, start = 0, stop = 1):
 	page = req.urlopen(request)
 	html = page.read()
 	page.close()
-	soup = bs4.BeautifulSoup(html, "html.parser", from_encoding="utf8")
+
+	return html
+
+def scrap_image_urls(html, start = 0, stop = 1):
+	soup = bs4.BeautifulSoup(html, 'html.parser', from_encoding='utf8')
 	soup = soup.find_all('script')
-	data = [c for s in soup for c in s.contents if c.startswith("AF_initDataCallback")][1]
-	data = data[data.find("data:") + 5:data.find("sideChannel") - 2]
+	data = [c for s in soup for c in s.contents if c.startswith('AF_initDataCallback')][1]
+	data = data[data.find('data:') + 5:data.find('sideChannel') - 2]
 	data = json.loads(data)
 	data = data[31][0][12][2]
 	image_urls= [x[1][3][0] for x in data if x[1]]
@@ -89,17 +93,17 @@ bot = commands.Bot(command_prefix=get_prefix, help_command=None)
 
 @bot.event
 async def on_ready():
-    print("導入サーバー数: " + str(len(bot.guilds)))
+    print('導入サーバー数: ' + str(len(bot.guilds)))
 
 @bot.command()
 async def fi(ctx, *args):
 	urls = []
 	if (len(args) > 2 and args[0].isdecimal() and args[1].isdecimal()):
-		urls = find_image(' '.join(args[2:]), int(args[0]) - 1, int(args[1]))
+		urls = scrap_image_urls(find_image(' '.join(args[2:])), int(args[0]) - 1, int(args[1]))
 	elif (len(args) > 1 and args[0].isdecimal()):
-		urls = find_image(' '.join(args[1:]), int(args[0]) - 1, int(args[0]))
+		urls = scrap_image_urls(find_image(' '.join(args[1:])), int(args[0]) - 1, int(args[0]))
 	else:
-		urls = find_image(' '.join(args))
+		urls = scrap_image_urls(find_image(' '.join(args)))
 	for url in urls:
 		await ctx.send(url)
 
@@ -111,7 +115,7 @@ async def help(ctx):
 async def set_prefix(ctx, prefix):
 	set_prefix_sql(str(ctx.guild.id), prefix)
 
-	await ctx.send(f"The prefix has been changed from {ctx.prefix} to {prefix}")
+	await ctx.send(f'The prefix has been changed from {ctx.prefix} to {prefix}')
 
 token = os.environ['FINDIMAGE_DISCORD_TOKEN']
 bot.run(token)
